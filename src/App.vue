@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import {onMounted, reactive, ref, watch} from "vue";
+import type {Ref} from "vue";
 import axios from "axios";
 
 import Header from "@/components/Header.vue";
 import CardList from "@/components/CardList.vue";
 //import Drawer from "@/components/Drawer.vue";
 
-const items = ref([]);
+type SneakersItem = {
+  id: number,
+  title: string,
+  imageUrl: string,
+  price: number,
+  isFavorite: boolean,
+  favoriteId: number
+}
+
+const items: Ref<Array<SneakersItem>> = ref([]);
 
 const filters = reactive({
   sortBy: 'id',
@@ -19,6 +29,55 @@ const onChangeSelect = (event: any) => {
 
 const onChangeSearchInput = (event: any) => {
   filters.searchQuery = event.target.value;
+};
+
+const fetchFavorites = async () => {
+  try {
+    const {data: favorites} = await axios.get('https://058e50087728bbd6.mokky.dev/favorites');
+
+    type FavoriteItem = {
+      id: number,
+      parentId: number
+    }
+
+    items.value = items.value.map(item => {
+      const favorite = favorites.find((favorite: FavoriteItem) => favorite.parentId === item.id);
+
+      if (!favorite) {
+        return item;
+      }
+
+      return {
+        ...item,
+        isFavorite: true,
+        favoriteId: favorite.id
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const addToFavorite = async (item: SneakersItem) => {
+  try {
+    if (!item.isFavorite) {
+      const obj = {
+        parentId: item.id
+      };
+
+      item.isFavorite = true;
+
+      const {data} = await axios.post('https://058e50087728bbd6.mokky.dev/favorites', obj);
+
+      item.favoriteId = data.id;
+    } else {
+      item.isFavorite = false;
+      await axios.delete(`https://058e50087728bbd6.mokky.dev/favorites/${item.favoriteId}`);
+      item.favoriteId = 0;
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 const fetchItems = async () => {
@@ -35,14 +94,24 @@ const fetchItems = async () => {
     const {data} = await axios.get('https://058e50087728bbd6.mokky.dev/items', {
       params
     });
-    items.value = data;
+    items.value = data.map((obj: SneakersItem) => ({
+      ...obj,
+      isFavorite: false,
+      favoriteId: 0,
+      isAdded: false
+    }));
   } catch (err) {
     console.log(err);
   }
 };
 
-onMounted(fetchItems);
+onMounted(async () => {
+  await fetchItems();
+  await fetchFavorites();
+});
 watch(filters, fetchItems);
+
+//provide('addToFavorite', addToFavorite);
 </script>
 
 <template>
@@ -73,7 +142,7 @@ watch(filters, fetchItems);
         </div>
       </div>
 
-      <CardList :items="items"/>
+      <CardList :items="items" @addToFavorite="addToFavorite"/>
     </div>
   </div>
 </template>

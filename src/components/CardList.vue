@@ -1,25 +1,25 @@
 <script setup lang="ts">
-
-import Card from "./Card.vue";
 import type {PropType} from "vue";
 
-type SneakersItems = {
+import Card from "./Card.vue";
+
+type SneakersItem = {
   id: number,
   title: string,
   imageUrl: string,
-  price: number
+  price: number,
+  isFavorite: boolean
 }
 
 defineProps({
   items: {
-    type: Array as PropType<SneakersItems[]>,
+    type: Array as PropType<SneakersItem[]>,
     required: true
   },
 })
 
-const onClickAdd = () => {
-  alert('Add')
-}
+const emit = defineEmits(['addToFavorite']);
+//const addToFavorite = inject('addToFavorite');
 </script>
 
 <template>
@@ -27,10 +27,12 @@ const onClickAdd = () => {
    <Card
        v-for="item in items"
        :key="item.id"
+       :id="item.id"
        :title="item.title"
        :imageUrl="item.imageUrl"
        :price="item.price"
-       :onClickAdd="onClickAdd"
+       :onClickFavorite="() => emit('addToFavorite', item)"
+       :isFavorite="item.isFavorite"
    />
   </div>
 </template>

@@ -2,6 +2,7 @@
 import type {PropType} from "vue";
 
 defineProps({
+  id: Number,
   title: String,
   imageUrl: String,
   price: Number,
