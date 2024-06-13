@@ -134,7 +134,8 @@ onMounted(async () => {
 watch(filters, fetchItems);
 
 //provide('addToFavorite', addToFavorite);
-provide('cartActions', {
+provide('cart', {
+  cart,
   closeDrawer,
   openDrawer
 })

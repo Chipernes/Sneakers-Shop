@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import {inject} from "vue";
 
-  type CartActions = {
+  type Cart = {
     closeDrawer: () => void;
   }
 
-  const cartActions = inject<CartActions>('cartActions');
+  const cartActions = inject<Cart>('cart');
 
   if (!cartActions) {
     throw new Error('cartActions injection failed');
