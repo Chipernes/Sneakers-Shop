@@ -36,12 +36,21 @@ const filters = reactive({
 });
 
 const addToCart = (item: SneakersItem) => {
+  cart.value.push(item);
+  item.isAdded = true;
+};
+
+const removeFromCart = (item: SneakersItem) => {
+
+  cart.value.splice(cart.value.indexOf(item), 1);
+  item.isAdded = false;
+};
+
+const onClickAddPlus = (item: SneakersItem) => {
   if (!item.isAdded) {
-    cart.value.push(item);
-    item.isAdded = true;
+    addToCart(item);
   } else {
-    cart.value.slice(cart.value.indexOf(item), 1);
-    item.isAdded = false;
+    removeFromCart(item);
   }
 };
 
@@ -137,7 +146,9 @@ watch(filters, fetchItems);
 provide('cart', {
   cart,
   closeDrawer,
-  openDrawer
+  openDrawer,
+  addToCart,
+    removeFromCart
 })
 </script>
 
@@ -169,7 +180,7 @@ provide('cart', {
         </div>
       </div>
 
-      <CardList :items="items" @add-to-favorite="addToFavorite" @add-to-cart="addToCart"/>
+      <CardList :items="items" @add-to-favorite="addToFavorite" @add-to-cart="onClickAddPlus"/>
     </div>
   </div>
 </template>
