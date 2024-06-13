@@ -13,10 +13,12 @@ type SneakersItem = {
   imageUrl: string,
   price: number,
   isFavorite: boolean,
-  favoriteId: number
+  favoriteId: number,
+  isAdded: boolean
 }
 
 const items: Ref<Array<SneakersItem>> = ref([]);
+const cart: Ref<Array<SneakersItem>> = ref([]);
 
 const drawerOpen = ref(false);
 
@@ -32,6 +34,16 @@ const filters = reactive({
   sortBy: 'id',
   searchQuery: ''
 });
+
+const addToCart = (item: SneakersItem) => {
+  if (!item.isAdded) {
+    cart.value.push(item);
+    item.isAdded = true;
+  } else {
+    cart.value.slice(cart.value.indexOf(item), 1);
+    item.isAdded = false;
+  }
+};
 
 const onChangeSelect = (event: any) => {
   filters.sortBy = event.target.value;
@@ -156,7 +168,7 @@ provide('cartActions', {
         </div>
       </div>
 
-      <CardList :items="items" @add-to-favorite="addToFavorite"/>
+      <CardList :items="items" @add-to-favorite="addToFavorite" @add-to-cart="addToCart"/>
     </div>
   </div>
 </template>

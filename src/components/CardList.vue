@@ -8,7 +8,8 @@ type SneakersItem = {
   title: string,
   imageUrl: string,
   price: number,
-  isFavorite: boolean
+  isFavorite: boolean,
+  isAdded: boolean
 }
 
 defineProps({
@@ -18,7 +19,7 @@ defineProps({
   },
 })
 
-const emit = defineEmits(['addToFavorite']);
+const emit = defineEmits(['addToFavorite', 'addToCart']);
 //const addToFavorite = inject('addToFavorite');
 </script>
 
@@ -31,6 +32,8 @@ const emit = defineEmits(['addToFavorite']);
        :title="item.title"
        :imageUrl="item.imageUrl"
        :price="item.price"
+       :onClickAdd="() => emit('addToCart', item)"
+       :isAdded="item.isAdded"
        :onClickFavorite="() => emit('addToFavorite', item)"
        :isFavorite="item.isFavorite"
    />
