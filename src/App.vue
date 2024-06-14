@@ -19,12 +19,14 @@ type SneakersItem = {
 
 const items: Ref<Array<SneakersItem>> = ref([]);
 const cart: Ref<Array<SneakersItem>> = ref([]);
+const isCreatingOrder = ref(false);
 
 const drawerOpen = ref(false);
 
-const totalPrice = computed(
-    () => cart.value.reduce((acc, item) => acc + item.price, 0)
-);
+const totalPrice = computed(() => cart.value.reduce((acc, item) => acc + item.price, 0));
+
+const cartIsEmpty = computed(() => cart.value.length === 0);
+const cartButtonDisabled = computed(() => isCreatingOrder.value || cartIsEmpty.value);
 
 const closeDrawer = () => {
   drawerOpen.value = false;
@@ -48,6 +50,24 @@ const removeFromCart = (item: SneakersItem) => {
 
   cart.value.splice(cart.value.indexOf(item), 1);
   item.isAdded = false;
+};
+
+const createOrder = async () => {
+  try {
+    isCreatingOrder.value = true;
+    const {data} = await axios.post('https://058e50087728bbd6.mokky.dev/orders', {
+      items: cart.value,
+      totalPrice: totalPrice.value,
+    });
+
+    cart.value = [];
+
+    return data;
+  } catch (err) {
+    console.log(err);
+  } finally {
+    isCreatingOrder.value = false;
+  }
 };
 
 const onClickAddPlus = (item: SneakersItem) => {
@@ -157,7 +177,13 @@ provide('cart', {
 </script>
 
 <template>
-  <Drawer v-if="drawerOpen" :total-price="totalPrice"/>
+  <Drawer
+      v-if="drawerOpen"
+      :total-price="totalPrice"
+      @create-order="createOrder"
+      :button-disabled="cartButtonDisabled"
+  />
+
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14">
     <Header :total-price="totalPrice" @open-drawer="openDrawer"/>
 
