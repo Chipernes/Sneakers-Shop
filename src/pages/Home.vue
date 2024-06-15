@@ -1,86 +1,93 @@
 <script setup lang="ts">
-import axios from "axios";
-import {inject, reactive, watch, onMounted, ref, Ref} from "vue";
+import axios from 'axios'
+import { inject, reactive, watch, onMounted, ref } from 'vue'
+import type { Ref } from 'vue'
 
-import CardList from "../components/CardList.vue";
+import CardList from '../components/CardList.vue'
 
 type SneakersItem = {
-  id: number,
-  title: string,
-  imageUrl: string,
-  price: number,
-  isFavorite: boolean,
-  favoriteId: number,
+  id: number
+  title: string
+  imageUrl: string
+  price: number
+  isFavorite: boolean
+  favoriteId: number
   isAdded: boolean
 }
 
 type Cart = {
-  cart: Ref<Array<SneakersItem>>,
-  addToCart: (param) => void,
-  removeFromCart: (param) => void,
+  cart: Ref<Array<SneakersItem>>
+  addToCart: (param: SneakersItem) => void
+  removeFromCart: (param: SneakersItem) => void
 }
 
-const {cart, addToCart, removeFromCart} = inject<Cart>('cart');
+const cartActions = inject<Cart>('cart')
 
-const items: Ref<Array<SneakersItem>> = ref([]);
+if (!cartActions) {
+  throw new Error('cartActions injection failed')
+}
+
+const { cart, addToCart, removeFromCart } = cartActions
+
+const items: Ref<Array<SneakersItem>> = ref([])
 
 const filters = reactive({
   sortBy: 'id',
   searchQuery: ''
-});
+})
 
 const onClickAddPlus = (item: SneakersItem) => {
   if (!item.isAdded) {
-    addToCart(item);
+    addToCart(item)
   } else {
-    removeFromCart(item);
+    removeFromCart(item)
   }
-};
+}
 
 const onChangeSelect = (event: any) => {
-  filters.sortBy = event.target.value;
-};
+  filters.sortBy = event.target.value
+}
 
 const onChangeSearchInput = (event: any) => {
-  filters.searchQuery = event.target.value;
-};
+  filters.searchQuery = event.target.value
+}
 
 const addToFavorite = async (item: SneakersItem) => {
   try {
     if (!item.isFavorite) {
       const obj = {
         item_id: item.id
-      };
+      }
 
-      item.isFavorite = true;
+      item.isFavorite = true
 
-      const {data} = await axios.post('https://058e50087728bbd6.mokky.dev/favorites', obj);
+      const { data } = await axios.post('https://058e50087728bbd6.mokky.dev/favorites', obj)
 
-      item.favoriteId = data.id;
+      item.favoriteId = data.id
     } else {
-      item.isFavorite = false;
-      await axios.delete(`https://058e50087728bbd6.mokky.dev/favorites/${item.favoriteId}`);
-      item.favoriteId = 0;
+      item.isFavorite = false
+      await axios.delete(`https://058e50087728bbd6.mokky.dev/favorites/${item.favoriteId}`)
+      item.favoriteId = 0
     }
   } catch (err) {
-    console.log(err);
+    console.log(err)
   }
-};
+}
 
 const fetchFavorites = async () => {
   try {
-    const {data: favorites} = await axios.get('https://058e50087728bbd6.mokky.dev/favorites');
+    const { data: favorites } = await axios.get('https://058e50087728bbd6.mokky.dev/favorites')
 
     type FavoriteItem = {
-      id: number,
+      id: number
       item_id: number
     }
 
-    items.value = items.value.map(item => {
-      const favorite = favorites.find((favorite: FavoriteItem) => favorite.item_id === item.id);
+    items.value = items.value.map((item) => {
+      const favorite = favorites.find((favorite: FavoriteItem) => favorite.item_id === item.id)
 
       if (!favorite) {
-        return item;
+        return item
       }
 
       return {
@@ -88,59 +95,58 @@ const fetchFavorites = async () => {
         isFavorite: true,
         favoriteId: favorite.id
       }
-    });
+    })
   } catch (err) {
-    console.log(err);
+    console.log(err)
   }
-};
+}
 
 const fetchItems = async () => {
   try {
     const params = {
       title: '*',
-      sortBy: filters.sortBy,
-    };
-
-    if (filters.searchQuery) {
-      params.title = `*${filters.searchQuery}*`;
+      sortBy: filters.sortBy
     }
 
-    const {data} = await axios.get('https://058e50087728bbd6.mokky.dev/items', {
+    if (filters.searchQuery) {
+      params.title = `*${filters.searchQuery}*`
+    }
+
+    const { data } = await axios.get('https://058e50087728bbd6.mokky.dev/items', {
       params
-    });
+    })
     items.value = data.map((obj: SneakersItem) => ({
       ...obj,
       isFavorite: false,
       favoriteId: 0,
       isAdded: false
-    }));
+    }))
   } catch (err) {
-    console.log(err);
+    console.log(err)
   }
-};
+}
 
 onMounted(async () => {
-  const localCart = localStorage.getItem('cart');
-  cart.value = localCart ? JSON.parse(localCart) : [];
+  const localCart = localStorage.getItem('cart')
+  cart.value = localCart ? JSON.parse(localCart) : []
 
-  await fetchItems();
-  await fetchFavorites();
+  await fetchItems()
+  await fetchFavorites()
 
   items.value = items.value.map((item) => ({
     ...item,
-    isAdded: cart.value.some((cartItem) => cartItem.id === item.id)
-  }));
-});
+    isAdded: cart.value.some((cartItem: SneakersItem) => cartItem.id === item.id)
+  }))
+})
 
 watch(cart, () => {
   items.value = items.value.map((item) => ({
     ...item,
     isAdded: false
   }))
-});
+})
 
-watch(filters, fetchItems);
-
+watch(filters, fetchItems)
 </script>
 
 <template>
@@ -156,21 +162,19 @@ watch(filters, fetchItems);
       </select>
 
       <div class="relative">
-        <img class="absolute left-4 top-3" src="/search.svg" alt="Search"/>
+        <img class="absolute left-4 top-3" src="/search.svg" alt="Search" />
         <input
-            @input="onChangeSearchInput"
-            class="border rounded-md py-2 pl-11 pr-4 outline-none focus:border-gray-400"
-            placeholder="Search..."
-        >
+          @input="onChangeSearchInput"
+          class="border rounded-md py-2 pl-11 pr-4 outline-none focus:border-gray-400"
+          placeholder="Search..."
+        />
       </div>
     </div>
   </div>
 
   <div class="mt-10">
-    <CardList :items="items" @add-to-favorite="addToFavorite" @add-to-cart="onClickAddPlus"/>
+    <CardList :items="items" @add-to-favorite="addToFavorite" @add-to-cart="onClickAddPlus" />
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

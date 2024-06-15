@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type {PropType} from "vue";
+import type { PropType } from 'vue'
 
-import Card from "./Card.vue";
+import Card from './Card.vue'
 
 type SneakersItem = {
-  id: number,
-  title: string,
-  imageUrl: string,
-  price: number,
-  isFavorite: boolean,
+  id: number
+  title: string
+  imageUrl: string
+  price: number
+  isFavorite: boolean
   isAdded: boolean
 }
 
@@ -20,26 +20,24 @@ defineProps({
   isFavorites: Boolean
 })
 
-const emit = defineEmits(['addToFavorite', 'addToCart']);
+const emit = defineEmits(['addToFavorite', 'addToCart'])
 </script>
 
 <template>
   <div class="grid grid-cols-4 gap-5" v-auto-animate>
-   <Card
-       v-for="item in items"
-       :key="item.id"
-       :id="item.id"
-       :title="item.title"
-       :imageUrl="item.imageUrl"
-       :price="item.price"
-       :onClickAdd="isFavorites ? null : () => emit('addToCart', item)"
-       :isAdded="item.isAdded"
-       :onClickFavorite="isFavorites ? null : () => emit('addToFavorite', item)"
-       :isFavorite="item.isFavorite"
-   />
+    <Card
+      v-for="item in items"
+      :key="item.id"
+      :id="item.id"
+      :title="item.title"
+      :imageUrl="item.imageUrl"
+      :price="item.price"
+      :onClickAdd="isFavorites ? undefined : () => emit('addToCart', item)"
+      :isAdded="item.isAdded"
+      :onClickFavorite="isFavorites ? undefined : () => emit('addToFavorite', item)"
+      :isFavorite="item.isFavorite"
+    />
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
