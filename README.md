@@ -1,6 +1,7 @@
 # Sneakers Shop
 ECommerce Sneakers Shop using:
 - Vue 3
+- Vue Router
 - TailwindCSS
 - Axios
 - Composition API 
