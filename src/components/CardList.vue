@@ -17,10 +17,10 @@ defineProps({
     type: Array as PropType<SneakersItem[]>,
     required: true
   },
+  isFavorites: Boolean
 })
 
 const emit = defineEmits(['addToFavorite', 'addToCart']);
-//const addToFavorite = inject('addToFavorite');
 </script>
 
 <template>
@@ -32,9 +32,9 @@ const emit = defineEmits(['addToFavorite', 'addToCart']);
        :title="item.title"
        :imageUrl="item.imageUrl"
        :price="item.price"
-       :onClickAdd="() => emit('addToCart', item)"
+       :onClickAdd="isFavorites ? null : () => emit('addToCart', item)"
        :isAdded="item.isAdded"
-       :onClickFavorite="() => emit('addToFavorite', item)"
+       :onClickFavorite="isFavorites ? null : () => emit('addToFavorite', item)"
        :isFavorite="item.isFavorite"
    />
   </div>
